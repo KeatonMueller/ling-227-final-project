@@ -9,22 +9,20 @@ from numpy import linalg, array, zeros
 class CNGM(AbstractModel):
     alph = string.ascii_lowercase
 
+    ## Measures the similarity between two profiles by the angle formed between them ##
     def cosSimilarity(self, auth, text_profile):
-        t_array = array(text_profile)
-        a_array = array(self.profiles[auth])
-        return (a_array @ t_array) / (linalg.norm(a_array) * linalg.norm(t_array))
+        return (self.profiles[auth] @ text_profile) / (linalg.norm(self.profiles[auth]) * linalg.norm(text_profile))
 
-
+    ## Cleans the text into a form that works for processing ##
     def _clean(self, text):
-        text = sub('\n+?', ' ', text)
-        text = text.translate(text.maketrans('', '', ' ' + string.punctuation))
+        text = sub('[\n\t ' + string.punctuation + ']+?', '', text)
         text = text.lower()
         text = text.encode('ascii', 'ignore').decode()
         return text
 
-
+    ## Generates the author profiles, which are vectors of size 26^N ##
     def _profile(self, text):
-        prof = [0]*(26**self.N)
+        prof = zeros(26**self.N)
         ngs = ngrams(text, self.N)
         for tup in ngs:
             loc = 0
@@ -39,11 +37,9 @@ class CNGM(AbstractModel):
         self.profiles = {auth : 0 for auth in training_data}
         self.N = N
 
-        # clean the text into a form that works for processing
         for auth in training_data:
             training_data[auth] = self._clean(training_data[auth])
 
-        # generate the author profiles, which are vectors of size 26^N
         for auth in training_data:
             self.profiles[auth] = self._profile(training_data[auth])
 

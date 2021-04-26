@@ -1,6 +1,10 @@
 from numpy import exp
 from abstract_model import AbstractModel
-from lzw import compression_size
+
+# add .. to python's path to allow imports from parent directory
+import sys, os
+sys.path.insert(1, os.path.join(sys.path[0], '..'))
+from utils.lzw import compression_size
 
 class CompressionModel(AbstractModel):
     def __init__(self):

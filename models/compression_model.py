@@ -29,6 +29,8 @@ class CompressionModel(AbstractModel):
             candidate = '\n'.join([profile[0], text])
             candidate_size = compression_size(candidate)
 
+            # NOTE: percent difference *highly* favors larger training sets
+            #       I still need to a read some papers to find a better way of comparing compressed sizes
             pct_diff = candidate_size / profile[1]
             diffs[auth] = pct_diff
 

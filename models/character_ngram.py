@@ -1,8 +1,8 @@
 from abstract_model import AbstractModel
 from re import sub
 from nltk import ngrams
-import string
 from numpy import linalg, array, zeros
+import string
 
 # Character N-gram model
 # Following the method described in Kjell et al., 2004

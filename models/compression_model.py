@@ -20,24 +20,21 @@ class CompressionModel(AbstractModel):
             self._profiles[auth] = (profile_text, size)
 
     def identify(self, text):
-        # dict storing size difference of compressed texts
-        diffs = {}
+        # dict storing sizes of the compressed texts
+        sizes = {}
 
         # compute difference between each profile's size and profile + `text`
         for auth in self._profiles:
             profile = self._profiles[auth]
             candidate = '\n'.join([profile[0], text])
             candidate_size = compression_size(candidate)
+            # store this profile's representation length of the text
+            sizes[auth] = candidate_size - profile[1]
 
-            # NOTE: percent difference *highly* favors larger training sets
-            #       I still need to a read some papers to find a better way of comparing compressed sizes
-            pct_diff = candidate_size / profile[1]
-            diffs[auth] = pct_diff
-
-        # perform softmax over percent differences
-        denom = sum(exp(list(diffs.values())))
-        # flip softmax value so that higher difference leads to lower probability
-        scores = [(1 - (exp(diffs[auth]) / denom), auth) for auth in diffs]
+        # perform softmax over the sizes
+        denom = sum(exp(list(sizes.values())))
+        # flip softmax value so that higher sizes lead to lower probability
+        scores = [(1 - (exp(sizes[auth]) / denom), auth) for auth in sizes]
 
         # return sorted in decreasing order of confidence
         return sorted(scores, key=lambda x: x[0], reverse=True)

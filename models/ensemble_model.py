@@ -1,7 +1,7 @@
-from abstract_model import AbstractModel
-from character_ngram_svm import CNGM
-from compression_model import CompressionModel
-from word_frequency_model import BOW
+from models.abstract_model import AbstractModel
+from models.character_ngram_svm import CNGM
+from models.compression_model import CompressionModel
+from models.word_frequency_model import BOW
 
 class Ensemble(AbstractModel):
     def __init__(self, weights=(1/3.0, 1/3.0, 1/3.0), CNGM_specs=(2, 0)):

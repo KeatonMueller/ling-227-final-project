@@ -1,4 +1,4 @@
-from abstract_model import AbstractModel
+from models.abstract_model import AbstractModel
 import re
 import string
 import pandas as pd
@@ -54,8 +54,10 @@ class BOW(AbstractModel):
     
     def train(self, training_data):
         ##TODO: call _makeFeatureMatrix and convert to desired data structure of o/p profiles
+        pass
         
     def identify(self, text):
         ##TODO: call _makeProfile on text, find cosSimilarity, convert to probability
+        pass
 
 

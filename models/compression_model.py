@@ -1,12 +1,11 @@
 from numpy import exp
-from abstract_model import AbstractModel
-
-# add .. to python's path to allow imports from parent directory
-import sys, os
-sys.path.insert(1, os.path.join(sys.path[0], '..'))
+from models.abstract_model import AbstractModel
 from utils.lzw import compression_size
 
 class CompressionModel(AbstractModel):
+    '''
+    Based on ideas presented in: https://journals.aps.org/prl/pdf/10.1103/PhysRevLett.88.048702
+    '''
     def __init__(self):
         self._profiles = {}
 
@@ -31,10 +30,13 @@ class CompressionModel(AbstractModel):
             # store this profile's representation length of the text
             sizes[auth] = candidate_size - profile[1]
 
+        # normalize sizes to prevent overflow
+        # flip sign so that higher size leads to lower confidence
+        sizes = { auth: -size / max(sizes.values()) for auth, size in sizes.items() }
+
         # perform softmax over the sizes
         denom = sum(exp(list(sizes.values())))
-        # flip softmax value so that higher sizes lead to lower probability
-        scores = [(1 - (exp(sizes[auth]) / denom), auth) for auth in sizes]
+        scores = [(exp(sizes[auth]) / denom, auth) for auth in sizes]
 
         # return sorted in decreasing order of confidence
         return sorted(scores, key=lambda x: x[0], reverse=True)

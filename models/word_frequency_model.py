@@ -9,8 +9,11 @@ from nltk.stem import WordNetLemmatizer
 
 class BOW(AbstractModel):
     
+    def __init__(self, topN=100):
+        self.topN = topN
+    
     ### Preprocessing: accept string text, return a list of word stems
-    def _preprocess(text):
+    def _preprocess(self, text):
         text = re.sub('\s', ' ', text)
         text = text.lower()
         text = text.encode('ascii', 'ignore').decode()
@@ -25,7 +28,7 @@ class BOW(AbstractModel):
 
     ### Take author and input text, return df (Series) of profiles
     def _makeProfile(self, auth, text):
-        wdlist = _preprocess(text)
+        wdlist = self._preprocess(text)
 
         totalvocab = len(wdlist)
 
@@ -44,7 +47,7 @@ class BOW(AbstractModel):
         for auth in training_data:
             text = training_data[auth]
 
-            df = _makeProfile(self, auth, text)
+            df = self._makeProfile(auth, text)
 
             featdf = featdf.append(df) #, ignore_index=True)
 
@@ -54,12 +57,11 @@ class BOW(AbstractModel):
         return featdf
 
     ## Measures the similarity between two profiles by the angle formed between them ##
-    def _cosSimilarity(p1, p2):
+    def _cosSimilarity(self, p1, p2):
         return (p1 @ p2) / (np.linalg.norm(p1) * np.linalg.norm(p2))
     
-    def train(self, training_data, topN=100):
-        self.topN = topN
-
+    def train(self, training_data):
+        
         traindict = {}
         for auth in training_data:
             corpus = ''
@@ -67,7 +69,7 @@ class BOW(AbstractModel):
                 corpus = corpus+text+' '
             traindict[auth] = corpus
 
-        featmatrix = _makeFeatureMatrix(self, traindict)
+        featmatrix = self._makeFeatureMatrix(traindict)
 
         self.profiledf = featmatrix
         return
@@ -76,7 +78,7 @@ class BOW(AbstractModel):
     
         featmatrix = self.profiledf
 
-        pr = _makeProfile(self, 'Test', text)
+        pr = self._makeProfile('Test', text)
 
         testdf = featmatrix.append(pr)
         testdf.fillna(0, inplace=True)
@@ -88,19 +90,21 @@ class BOW(AbstractModel):
         
     def identify(self, text):
     
-        testdf = _createTest(self, text)
+        testser = self._createTest(text)
         authors = self.profiledf.index.tolist()
 
         M = len(self.profiledf)
         clist = []
         for i in range(M):
-            clist.append(cosSimilarity(self.profiledf.iloc[i], testdf.iloc[0]))
+            clist.append(self._cosSimilarity(self.profiledf.iloc[i], testser))
 
-        probdict = {}
-        for i in range(M):
-            probdict[authors[i]] = clist[i]/sum(clist)
+        #probdict = {}
+        #for i in range(M):
+        #    probdict[authors[i]] = clist[i]/sum(clist)
 
-        idlist = sorted([(clist[i]/sum(clist), authors[i]) for i in range(M)], reverse=True)
+        alist = [np.pi/2 - np.arccos(c) for c in clist]   
+        
+        idlist = sorted([(alist[i]/sum(alist), authors[i]) for i in range(M)], reverse=True)
 
         return idlist
 

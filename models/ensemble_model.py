@@ -4,10 +4,10 @@ from models.compression_model import CompressionModel
 from models.word_frequency_model import BOW
 
 class Ensemble(AbstractModel):
-    def __init__(self, weights=(1/3.0, 1/3.0, 1/3.0), CNGM_specs=(2, 0)):
+    def __init__(self, weights=(1/3.0, 1/3.0, 1/3.0), CNGM_specs=(2, 0), BOW_topN=100):
         assert len(CNGM_specs) == 2
         
-        self.bowm = BOW()
+        self.bowm = BOW(BOW_topN)
         self.comm = CompressionModel()
         self.cngm = CNGM(CNGM_specs[0], CNGM_specs[1])
 

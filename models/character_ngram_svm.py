@@ -4,7 +4,7 @@ from re import sub
 from nltk import ngrams
 import string
 
-from numpy import linalg, array, zeros, argsort
+from numpy import linalg, array, zeros, argsort, mean
 from sklearn.svm import SVC
 from scipy.special import softmax
 
@@ -32,7 +32,7 @@ class CNGM(AbstractModel):
         to build profiles using only alphabetical characters (False) or
         including punctuation (True). Default is False.
         """
-        self.alph += string.punctuation + ' '
+        self.alph += (string.punctuation + ' ') if extended_alphabet else ''
         self.N = N
         self.features = features if features != 0 else len(self.alph)**N
 
@@ -44,7 +44,7 @@ class CNGM(AbstractModel):
         along with making the text uniformly lowercase and transforming it
         into ascii-compatible characters.
         """
-        if not len(self.alph) == 26:
+        if len(self.alph) == 26:
             text = sub('[\n\t ' + string.punctuation + ']+?', '', text)
         else:
             text = sub('[\n\t]+?', '', text)
@@ -88,7 +88,7 @@ class CNGM(AbstractModel):
         self.train_data[0] = array([prof[self.feature_indices] for prof in self.train_data[0]])
 
 
-    def train(self, training_data, partitions=200):
+    def train(self, training_data, chunk_size=100):
         """
         Train the model based on the training_data.
 
@@ -107,22 +107,27 @@ class CNGM(AbstractModel):
         The model then builds a profile for each author based on the texts.
 
 
-        partitions should be an into specifying how many distinct profiles
-        to generate from the training data. Does so by dividing the texts
-        corresponding to each author into chunks of size len(lines of texts)//partitions.
-        Default is 200.
+        chunk_size should be an int specifying how large the distinct profiles
+        generated from the training data should be, by number of lines. Default is 500.
         """
+        # For some reason, for the SVM to work, the keys need to be in alphabetical order
+        training_data = {k : training_data[k] for k in sorted(training_data)}
+
+        # Compile all author texts into one large text to then be broken down
+        for auth in training_data:
+            training_data[auth] = '\n\n'.join(training_data[auth])
+
         self.auths = list(training_data.keys())
+        self.chunk_size = chunk_size
 
         # Creates two lists, one of the texts and one of the corresponding author labels.
         labels = []
         texts = []
         for auth in training_data:
             lines = training_data[auth].split('\n')
-            step = len(lines) // partitions
-            for p in range( step, len(lines), step ):
-                labels.append(auth)                         # authors per text in the training corpus
-                texts.append('\n'.join(lines[p-step : p]))  # texts in the training corpus
+            for p in range( chunk_size, len(lines), chunk_size ):
+                labels.append(auth)                               # authors per text in the training corpus
+                texts.append('\n'.join(lines[p-chunk_size : p]))  # texts in the training corpus
         labels = array(labels)
         texts = array(texts)
 
@@ -146,13 +151,21 @@ class CNGM(AbstractModel):
 
 
     def identify(self, text):
-        # Prepares the text for identification.
-        text = self._clean(text)
-        t_prof = self._profile(text)
-        t_prof = t_prof[self.feature_indices]
-        t_prof = t_prof.reshape(1, -1)
-
-        # Gets the probabilities and return them
-        ###print(t_prof)
-        probs = self.model.predict_proba(t_prof)[0]
-        return sorted([(probs[i], self.auths[i]) for i in range(len(probs))], reverse=True)
+        # Generates smaller chunks of text (same size as in training) and gets probabilities of
+        # each chunk belonging to a certain author.
+        lines = text.split('\n')
+        net_probs = []
+        for p in range( self.chunk_size, len(lines), self.chunk_size ):
+            chunk = '\n'.join(lines[p - self.chunk_size : p])
+            chunk = self._clean(chunk)
+            c_prof = c_prof = self._profile(chunk)
+            c_prof = c_prof[self.feature_indices]
+            c_prof = c_prof.reshape(1, -1)
+            probs = self.model.predict_proba(c_prof)[0]
+            net_probs.append(probs)
+        ###print(array(net_probs))
+        # Takes the average over all probabilities
+        ###print(self.auths)
+        avg_probs = mean(array(net_probs), axis=0)
+        ###print(avg_probs)
+        return sorted([(avg_probs[i], self.auths[i]) for i in range(len(avg_probs))], reverse=True)

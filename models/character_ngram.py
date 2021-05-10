@@ -4,6 +4,12 @@ from nltk import ngrams
 from numpy import linalg, array, zeros
 import string
 
+######################################################
+######################################################
+#################    DEPRECATED   ####################
+######################################################
+######################################################
+
 # Character N-gram model
 # Following the method described in Kjell et al., 2004
 class CNGM(AbstractModel):

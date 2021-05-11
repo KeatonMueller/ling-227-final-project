@@ -14,7 +14,7 @@ class CompressionModel(AbstractModel):
         self._profiles = {}
         # store the concatenated text and compression size for each author
         for auth in training_data:
-            profile_text = '\n'.join(training_data[auth])
+            profile_text = ''.join(training_data[auth])
             size = compression_size(profile_text)
             self._profiles[auth] = (profile_text, size)
 
@@ -25,7 +25,7 @@ class CompressionModel(AbstractModel):
         # compute difference between each profile's size and profile + `text`
         for auth in self._profiles:
             profile = self._profiles[auth]
-            candidate = '\n'.join([profile[0], text])
+            candidate = profile[0] + text
             candidate_size = compression_size(candidate)
             # store this profile's representation length of the text
             sizes[auth] = candidate_size - profile[1]

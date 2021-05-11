@@ -3,9 +3,10 @@ import os
 # list of author names, each author must correspond to a subdirectory in texts/
 AUTHORS = ['Chapman', 'Cowper', 'Dryden', 'Pope']
 
-def read_data():
+def read_data(authors=AUTHORS):
     '''
-    Read the data for each author in the `AUTHORS` list.
+    Read the data for each author in the `authors` list which also
+    appears in the `AUTHORS` list.
 
     Return all data for each author, in the form { author_name: [Iliad, text, text, ...] },
     with the Iliad always appearing in the first position in the list of texts.
@@ -16,7 +17,7 @@ def read_data():
     data = {}
 
     # for each author
-    for auth in AUTHORS:
+    for auth in [x for x in AUTHORS if x in authors]:
         # list all files in author's directory
         files = os.listdir(f'texts/{auth}')
         # compile all the texts

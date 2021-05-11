@@ -8,8 +8,14 @@ def read_data(authors=AUTHORS):
     Read the data for each author in the `authors` list which also
     appears in the `AUTHORS` list.
 
-    Return all data for each author, in the form { author_name: [Iliad, text, text, ...] },
-    with the Iliad always appearing in the first position in the list of texts.
+    Returns a dict in the form:
+    {
+        author_name: {
+            'iliad': iliad,
+            'poetry': [text, text, ...]
+        },
+        ...
+    }
 
     This function assumes it's being called in the root directory of the entire project,
     otherwise the relative paths fail.
@@ -21,14 +27,15 @@ def read_data(authors=AUTHORS):
         # list all files in author's directory
         files = os.listdir(f'texts/{auth}')
         # compile all the texts
-        texts = []
+        texts = {}
         for file in files:
             contents = open(f'texts/{auth}/{file}', 'r').read().strip()
             # always put iliad in first position in list
             if 'iliad' in file:
-                texts.insert(0, contents)
+                texts['iliad'] = contents
             else:
-                texts.extend(contents.split('\n\n'))
+                if 'poetry' not in texts: texts['poetry'] = []
+                texts['poetry'].extend(contents.split('\n\n'))
         # store in dict
         data[auth] = texts
 

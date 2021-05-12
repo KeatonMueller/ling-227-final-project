@@ -13,6 +13,7 @@ class CNGM(AbstractModel):
     """
     Character N-gram model.
     Based on method in Houvardas and Stamatatos, 2006; expanded to add flexibility.
+    https://www.researchgate.net/publication/221655968_N-Gram_Feature_Selection_for_Authorship_Identification
     """
 
 

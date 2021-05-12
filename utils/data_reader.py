@@ -29,7 +29,7 @@ def read_data(authors=AUTHORS):
         # compile all the texts
         texts = {}
         for file in files:
-            contents = open(f'texts/{auth}/{file}', 'r').read().strip()
+            contents = open(f'texts/{auth}/{file}', 'r', encoding='utf-8').read().strip()
             # always put iliad in first position in list
             if 'iliad' in file:
                 texts['iliad'] = contents

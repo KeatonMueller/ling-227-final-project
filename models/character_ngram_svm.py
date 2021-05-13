@@ -156,8 +156,8 @@ class CNGM(AbstractModel):
         # each chunk belonging to a certain author.
         lines = text.split('\n')
         net_probs = []
-        for p in range( self.chunk_size, len(lines), self.chunk_size ):
-            chunk = '\n'.join(lines[p - self.chunk_size : p])
+        for p in range(0, len(lines), self.chunk_size):
+            chunk = '\n'.join(lines[p : p + self.chunk_size])
             chunk = self._clean(chunk)
             c_prof = c_prof = self._profile(chunk)
             c_prof = c_prof[self.feature_indices]

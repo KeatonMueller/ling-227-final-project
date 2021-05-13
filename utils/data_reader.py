@@ -1,7 +1,7 @@
 import os
 
 # list of author names, each author must correspond to a subdirectory in texts/
-AUTHORS = ['Chapman', 'Cowper', 'Dryden', 'Pope']
+AUTHORS = ['Chapman', 'Dryden', 'Pope']
 
 def read_data(authors=AUTHORS):
     '''

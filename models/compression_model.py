@@ -12,9 +12,16 @@ class CompressionModel(AbstractModel):
     def train(self, training_data):
         # reset any previously trained profiles
         self._profiles = {}
-        # store the concatenated text and compression size for each author
+        profiles = {}
+        # concatenate training texts
         for auth in training_data:
             profile_text = ''.join(training_data[auth])
+            profiles[auth] = profile_text
+        # truncate other data so everyone's is of same size
+        min_size = min([len(text) for text in profiles.values()])
+        # store concatenated text and compressed sizes
+        for auth in training_data:
+            profile_text = profiles[auth][:min_size]
             size = compression_size(profile_text)
             self._profiles[auth] = (profile_text, size)
 
